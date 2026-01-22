@@ -3,11 +3,14 @@ package main
 import (
 	"fmt"
 	"os"
+	"runtime"
 
 	"github.com/urfave/cli/v2"
 )
 
 type CmdHandler func(*Config, *cli.Context) error
+
+var Version = "dev"
 
 func CmdNotImplemented(*Config, *cli.Context) error {
 	return fmt.Errorf("Command not implemented")
@@ -19,7 +22,7 @@ func main() {
 	cliapp := cli.NewApp()
 	cliapp.Name = "s3-cli"
 	// cliapp.Usage = ""
-	cliapp.Version = "0.2.2"
+	cliapp.Version = Version + " " + runtime.Version()
 
 	cli.VersionFlag = &cli.BoolFlag{
 		Name:  "version, V",
