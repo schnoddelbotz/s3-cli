@@ -27,6 +27,7 @@ _testmain.go
 tdata/*
 TXT
 s3-cli
+s3-cli_*
 s3cmd-info
 empty.txt
 .env
