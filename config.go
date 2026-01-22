@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/go-ini/ini"
 	"github.com/urfave/cli/v2"
+	"gopkg.in/ini.v1"
 )
 
 // This is the global configuration, it's loaded from .s3cfg (by default) then with added
