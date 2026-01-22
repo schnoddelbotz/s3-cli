@@ -1,11 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/urfave/cli/v2"
 	"strings"
+
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/urfave/cli/v2"
 )
 
 func GetInfo(config *Config, c *cli.Context) error {
@@ -30,42 +31,42 @@ func GetInfo(config *Config, c *cli.Context) error {
 		}
 
 		if u.Path == "" || u.Path == "/" {
-			bucket := aws.String(u.Bucket)
+			bucket := u.Bucket
 
 			fmt.Printf("%s (bucket):\n", u.String())
 
-			if info, err := bsvc.GetBucketLocation(&s3.GetBucketLocationInput{Bucket: bucket}); err == nil {
-				if info.LocationConstraint != nil {
-					fmt.Printf("   Location: %s\n", *info.LocationConstraint)
+			if info, err := bsvc.GetBucketLocation(context.TODO(), &s3.GetBucketLocationInput{Bucket: &bucket}); err == nil {
+				if info.LocationConstraint != "" {
+					fmt.Printf("   Location: %s\n", info.LocationConstraint)
 				} else {
 					fmt.Printf("   Location: %s\n", "none")
 				}
 			}
-			if info, err := bsvc.GetBucketRequestPayment(&s3.GetBucketRequestPaymentInput{Bucket: bucket}); err == nil {
-				if info.Payer != nil {
-					fmt.Printf("   Payer: %s\n", *info.Payer)
+			if info, err := bsvc.GetBucketRequestPayment(context.TODO(), &s3.GetBucketRequestPaymentInput{Bucket: &bucket}); err == nil {
+				if info.Payer != "" {
+					fmt.Printf("   Payer: %s\n", info.Payer)
 				} else {
 					fmt.Printf("   Payer: %s\n", "none")
 				}
 			}
 		} else {
 			params := &s3.HeadObjectInput{
-				Bucket: aws.String(u.Bucket),
+				Bucket: &u.Bucket,
 				Key:    u.Key(),
 			}
-			info, err := bsvc.HeadObject(params)
+			info, err := bsvc.HeadObject(context.TODO(), params)
 			if err != nil {
 				fmt.Printf("Error fetching info for %s\n", u.String())
 				continue
 			}
 
 			fmt.Printf("%s (object):\n", u.String())
-			fmt.Printf("   File size: %d\n", *info.ContentLength)
+			fmt.Printf("   File size: %d\n", info.ContentLength)
 			fmt.Printf("   Last mod: %s\n", info.LastModified.Format(DATE_FMT))
 			fmt.Printf("   MIME type: %s\n", *info.ContentType)
 			fmt.Printf("   MD5 sum: %s\n", strings.Trim(*info.ETag, "\""))
-			if info.ServerSideEncryption != nil {
-				fmt.Printf("   SSE: %s\n", *info.ServerSideEncryption)
+			if info.ServerSideEncryption != "" {
+				fmt.Printf("   SSE: %s\n", info.ServerSideEncryption)
 			} else {
 				fmt.Printf("   SSE: %s\n", "none")
 			}
@@ -75,7 +76,7 @@ func GetInfo(config *Config, c *cli.Context) error {
 			// fmt.Printf("   ACL: %d\n", *info.)
 
 			for k, v := range info.Metadata {
-				fmt.Printf("   x-az-meta-%s: %s\n", k, *v)
+				fmt.Printf("   x-az-meta-%s: %s\n", k, v)
 			}
 		}
 	}

@@ -1,9 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
+
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/urfave/cli/v2"
 )
 
@@ -20,9 +21,9 @@ func RemoveBucket(config *Config, c *cli.Context) error {
 	}
 
 	params := &s3.DeleteBucketInput{
-		Bucket: aws.String(u.Bucket), // Required
+		Bucket: &u.Bucket,
 	}
-	if _, err := svc.DeleteBucket(params); err != nil {
+	if _, err := svc.DeleteBucket(context.TODO(), params); err != nil {
 		return err
 	}
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"mime"
 	"os"
@@ -8,9 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
 
 // Given a SRC and DST URL - copy the file
@@ -43,10 +44,10 @@ func copyToLocal(config *Config, src, dst *FileURI, ensure_directory bool) error
 	if err != nil {
 		return err
 	}
-	downloader := s3manager.NewDownloaderWithClient(svc)
+	downloader := manager.NewDownloader(svc)
 
 	params := &s3.GetObjectInput{
-		Bucket: aws.String(src.Bucket),
+		Bucket: &src.Bucket,
 		Key:    src.Key(),
 	}
 
@@ -78,7 +79,7 @@ func copyToLocal(config *Config, src, dst *FileURI, ensure_directory bool) error
 	}
 	defer fd.Close()
 
-	_, err = downloader.Download(fd, params)
+	_, err = downloader.Download(context.TODO(), fd, params)
 	if err != nil {
 		return err
 	}
@@ -93,8 +94,8 @@ func copyToS3(config *Config, src, dst *FileURI) error {
 		return err
 	}
 
-	uploader := s3manager.NewUploaderWithClient(svc, func(u *s3manager.Uploader) {
-		u.PartSize = config.PartSize * 1024 * 1024
+	uploader := manager.NewUploader(svc, func(u *manager.Uploader) {
+		u.PartSize = int64(config.PartSize) * 1024 * 1024
 		u.Concurrency = config.Concurrency
 	})
 
@@ -107,18 +108,18 @@ func copyToS3(config *Config, src, dst *FileURI) error {
 	if mimeType := mime.TypeByExtension(path.Ext(src.Path)); mimeType != "" {
 		contentType = &mimeType
 	}
-	params := &s3manager.UploadInput{
-		Bucket:      aws.String(dst.Bucket), // Required
+	params := &s3.PutObjectInput{
+		Bucket:      &dst.Bucket,
 		Key:         cleanBucketDestPath(src.Path, dst.Path),
 		Body:        fd,
 		ContentType: contentType,
 	}
 
 	if config.StorageClass != "" {
-		params.StorageClass = aws.String(config.StorageClass)
+		params.StorageClass = types.StorageClass(config.StorageClass)
 	}
 
-	_, err = uploader.Upload(params)
+	_, err = uploader.Upload(context.TODO(), params)
 	if err != nil {
 		return err
 	}
@@ -139,18 +140,20 @@ func copyOnS3(config *Config, src, dst *FileURI) error {
 		return fmt.Errorf("Invalid source for bucket to bucket copy path ends in '/'")
 	}
 
+	copySource := fmt.Sprintf("/%s/%s", src.Bucket, src.Path[1:])
 	params := &s3.CopyObjectInput{
-		Bucket:     aws.String(dst.Bucket),
-		CopySource: aws.String(fmt.Sprintf("/%s/%s", src.Bucket, src.Path[1:])),
+		Bucket:     &dst.Bucket,
+		CopySource: &copySource,
 		Key:        cleanBucketDestPath(src.Path, dst.Path),
 	}
 
 	// if this is an overwrite - note that
-	if src.Bucket == dst.Bucket && *params.CopySource == fmt.Sprintf("/%s/%s", dst.Bucket, *params.Key) {
-		params.MetadataDirective = aws.String("REPLACE")
+	if src.Bucket == dst.Bucket && copySource == fmt.Sprintf("/%s/%s", dst.Bucket, *params.Key) {
+		metadataDirective := types.MetadataDirectiveReplace
+		params.MetadataDirective = metadataDirective
 	}
 
-	_, err = svc.CopyObject(params)
+	_, err = svc.CopyObject(context.TODO(), params)
 	if err != nil {
 		return err
 	}

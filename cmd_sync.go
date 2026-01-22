@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/md5"
 	"fmt"
 	"io"
@@ -9,11 +10,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/urfave/cli/v2"
 	"path/filepath"
 	"strings"
+
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/urfave/cli/v2"
 )
 
 // Action for syncing
@@ -34,20 +36,20 @@ const (
 // One command to sync files/directories -- it's always recursive when directories are present
 //
 // Useful options
-//    --verbose
-//    --dry-run
-//    --no-check-md5
+//
+//	--verbose
+//	--dry-run
+//	--no-check-md5
 //
 // Notes:  Sync is one of three forms
 //
-//    file -> file
-//    file(s) -> directory
-//    directory -> directory
+//	  file -> file
+//	  file(s) -> directory
+//	  directory -> directory
 //
-//  -- If src ends in a '/' then a directory isn't created on the destination
-//       s3-cli sync foo/bar s3://bucket/data/  -- yields s3://bucket/data/bar/...
-//       s3-cli sync foo/bar/ s3://bucket/data/  -- yields s3://bucket/data/...
-//
+//	-- If src ends in a '/' then a directory isn't created on the destination
+//	     s3-cli sync foo/bar s3://bucket/data/  -- yields s3://bucket/data/bar/...
+//	     s3-cli sync foo/bar/ s3://bucket/data/  -- yields s3://bucket/data/...
 func CmdSync(config *Config, c *cli.Context) error {
 	const (
 		ACT_COPY     = iota
@@ -115,10 +117,10 @@ func CmdSync(config *Config, c *cli.Context) error {
 				return err
 			}
 			params := &s3.HeadObjectInput{
-				Bucket: aws.String(src.Bucket),
+				Bucket: &src.Bucket,
 				Key:    src.Key(),
 			}
-			if _, err := bsvc.HeadObject(params); err != nil {
+			if _, err := bsvc.HeadObject(context.TODO(), params); err != nil {
 				src_is_directory = true
 			}
 		}
@@ -316,11 +318,11 @@ func CmdSync(config *Config, c *cli.Context) error {
 	return nil
 }
 
-//  Walk either S3 or the local file system gathering files
-//    files_only == true -- only consider file names, not directories
+// Walk either S3 or the local file system gathering files
 //
-//  dropPrefix -- number of characters to remove from the front of the filename
+//	files_only == true -- only consider file names, not directories
 //
+// dropPrefix -- number of characters to remove from the front of the filename
 func buildFileInfo(config *Config, src *FileURI, dropPrefix int, addPrefix string) (map[string]*FileObject, error) {
 	files := make(map[string]*FileObject, 0)
 
@@ -368,9 +370,10 @@ func buildFileInfo(config *Config, src *FileURI, dropPrefix int, addPrefix strin
 }
 
 // Get the file info for a simple list of files this is used in the
-//    file -> file
-//    file(s) -> directory
-//  cases, since there is little reason to go walk huge directories trees to get information
+//
+//	  file -> file
+//	  file(s) -> directory
+//	cases, since there is little reason to go walk huge directories trees to get information
 func getFileInfo(config *Config, srcs []*FileURI) map[FileURI]*FileObject {
 	result := make(map[FileURI]*FileObject)
 
@@ -391,10 +394,10 @@ func getFileInfo(config *Config, srcs []*FileURI) map[FileURI]*FileObject {
 			}
 
 			params := &s3.HeadObjectInput{
-				Bucket: aws.String(src.Bucket),
+				Bucket: &src.Bucket,
 				Key:    src.Key(),
 			}
-			response, err := bsvc.HeadObject(params)
+			response, err := bsvc.HeadObject(context.TODO(), params)
 			if err != nil {
 				continue
 			}
@@ -458,7 +461,7 @@ func amazonEtagHash(path string) (string, error) {
 	return hash, nil
 }
 
-//  GoRoutine workers -- copy from src to dst
+// GoRoutine workers -- copy from src to dst
 func workerCopy(config *Config, wg *sync.WaitGroup, jobs <-chan Action, progress chan int64) {
 	for item := range jobs {
 		err := copyFile(config, item.Src, item.Dst, true)
@@ -471,9 +474,9 @@ func workerCopy(config *Config, wg *sync.WaitGroup, jobs <-chan Action, progress
 	wg.Done()
 }
 
-//  GoRoutine workers -- remove file
+// GoRoutine workers -- remove file
 func workerRemove(config *Config, wg *sync.WaitGroup, jobs <-chan Action, progress chan int64) {
-	objects := make([]*s3.ObjectIdentifier, 0)
+	objects := make([]types.ObjectIdentifier, 0)
 
 	// Helper to remove the actual objects
 	doDelete := func(last *FileURI) error {
@@ -483,17 +486,17 @@ func workerRemove(config *Config, wg *sync.WaitGroup, jobs <-chan Action, progre
 		}
 
 		params := &s3.DeleteObjectsInput{
-			Bucket: aws.String(last.Bucket), // Required
-			Delete: &s3.Delete{ // Required
+			Bucket: &last.Bucket,
+			Delete: &types.Delete{
 				Objects: objects,
 			},
 		}
 
-		if _, err := bsvc.DeleteObjects(params); err != nil {
+		if _, err := bsvc.DeleteObjects(context.TODO(), params); err != nil {
 			return err
 		}
 
-		objects = make([]*s3.ObjectIdentifier, 0)
+		objects = make([]types.ObjectIdentifier, 0)
 		return nil
 	}
 
@@ -513,7 +516,8 @@ func workerRemove(config *Config, wg *sync.WaitGroup, jobs <-chan Action, progre
 				// return err
 			}
 		} else {
-			objects = append(objects, &s3.ObjectIdentifier{Key: item.Dst.Key()})
+			key := item.Dst.Key()
+			objects = append(objects, types.ObjectIdentifier{Key: key})
 			if len(objects) == 500 {
 				if err := doDelete(last); err != nil {
 					// return err
@@ -530,7 +534,7 @@ func workerRemove(config *Config, wg *sync.WaitGroup, jobs <-chan Action, progre
 	wg.Done()
 }
 
-//  GoRoutine workers -- check checksum and copy if needed
+// GoRoutine workers -- check checksum and copy if needed
 func workerChecksum(config *Config, wg *sync.WaitGroup, jobs <-chan Action, progress chan int64) {
 	for item := range jobs {
 		var (
@@ -562,7 +566,7 @@ func workerChecksum(config *Config, wg *sync.WaitGroup, jobs <-chan Action, prog
 	wg.Done()
 }
 
-//  output the progress to the user
+// output the progress to the user
 func humanize(value int64) string {
 	const base = 1024.0
 	sizes := []string{"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB"}

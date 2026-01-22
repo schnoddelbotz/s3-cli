@@ -1,9 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
+
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/urfave/cli/v2"
 )
 
@@ -21,9 +22,9 @@ func MakeBucket(config *Config, c *cli.Context) error {
 	}
 
 	params := &s3.CreateBucketInput{
-		Bucket: aws.String(u.Bucket),
+		Bucket: &u.Bucket,
 	}
-	if _, err := svc.CreateBucket(params); err != nil {
+	if _, err := svc.CreateBucket(context.TODO(), params); err != nil {
 		return err
 	}
 

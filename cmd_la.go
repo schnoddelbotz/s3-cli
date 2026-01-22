@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"github.com/aws/aws-sdk-go/service/s3"
+
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/urfave/cli/v2"
 )
 
@@ -14,8 +16,7 @@ func ListAll(config *Config, c *cli.Context) error {
 
 	svc := SessionNew(config)
 
-	var params *s3.ListBucketsInput
-	resp, err := svc.ListBuckets(params)
+	resp, err := svc.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
 	if err != nil {
 		return err
 	}

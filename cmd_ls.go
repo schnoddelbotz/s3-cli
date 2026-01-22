@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"github.com/aws/aws-sdk-go/service/s3"
+
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/urfave/cli/v2"
 )
 
@@ -12,8 +14,7 @@ func ListBucket(config *Config, c *cli.Context) error {
 	svc := SessionNew(config)
 
 	if len(args) == 0 {
-		var params *s3.ListBucketsInput
-		resp, err := svc.ListBuckets(params)
+		resp, err := svc.ListBuckets(context.TODO(), &s3.ListBucketsInput{})
 		if err != nil {
 			return err
 		}
@@ -27,7 +28,7 @@ func ListBucket(config *Config, c *cli.Context) error {
 	return listBucket(config, svc, args)
 }
 
-func listBucket(config *Config, svc *s3.S3, args []string) error {
+func listBucket(config *Config, svc *s3.Client, args []string) error {
 	for _, arg := range args {
 		u, err := FileURINew(arg)
 		if err != nil || u.Scheme != "s3" {
@@ -57,7 +58,7 @@ func listBucket(config *Config, svc *s3.S3, args []string) error {
 				}
 				if page.Contents != nil {
 					for _, item := range page.Contents {
-						fmt.Printf("%16s %9d   s3://%s/%s\n", item.LastModified.Format(DATE_FMT), *item.Size, u.Bucket, *item.Key)
+						fmt.Printf("%16s %9d   s3://%s/%s\n", item.LastModified.Format(DATE_FMT), item.Size, u.Bucket, *item.Key)
 					}
 				}
 			})

@@ -1,48 +1,45 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
+
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-func remotePager(config *Config, svc *s3.S3, uri string, delim bool, pager func(page *s3.ListObjectsV2Output)) error {
+func remotePager(config *Config, svc *s3.Client, uri string, delim bool, pager func(page *s3.ListObjectsV2Output)) error {
 	u, err := FileURINew(uri)
 	if err != nil || u.Scheme != "s3" {
 		return fmt.Errorf("requires buckets to be prefixed with s3://")
 	}
 
+	maxKeys := int32(1000)
 	params := &s3.ListObjectsV2Input{
-		Bucket:  aws.String(u.Bucket), // Required
-		MaxKeys: aws.Int64(1000),
+		Bucket:  &u.Bucket,
+		MaxKeys: &maxKeys,
 	}
 	if u.Path != "" && u.Path != "/" {
 		params.Prefix = u.Key()
 	}
 	if delim {
-		params.Delimiter = aws.String("/")
+		delimiter := "/"
+		params.Delimiter = &delimiter
 	}
 
-	wrapper := func(page *s3.ListObjectsV2Output, lastPage bool) bool {
+	paginator := s3.NewListObjectsV2Paginator(svc, params)
+
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(context.TODO())
+		if err != nil {
+			return err
+		}
 		pager(page)
-		return true
 	}
 
-	if svc == nil {
-		svc = SessionNew(config)
-	}
-
-	bsvc, err := SessionForBucket(config, u.Bucket)
-	if err != nil {
-		return err
-	}
-	if err := bsvc.ListObjectsV2Pages(params, wrapper); err != nil {
-		return err
-	}
 	return nil
 }
 
-func remoteList(config *Config, svc *s3.S3, args []string) ([]FileObject, error) {
+func remoteList(config *Config, svc *s3.Client, args []string) ([]FileObject, error) {
 	result := make([]FileObject, 0)
 
 	for _, arg := range args {

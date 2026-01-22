@@ -6,16 +6,16 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/ini.v1"
 )
 
 // This is the global configuration, it's loaded from .s3cfg (by default) then with added
-//  overrides from the command line
+//
+//	overrides from the command line
 //
 // Command lines are by default the snake case version of the the struct names with "-" instead of "_"
-//
 type Config struct {
 	AccessKey    string `ini:"access_key"`
 	SecretKey    string `ini:"secret_key"`
@@ -37,23 +37,24 @@ type Config struct {
 
 var (
 	validStorageClasses = map[string]bool{
-		"":                                      true,
-		s3.ObjectStorageClassStandard:           true,
-		s3.ObjectStorageClassReducedRedundancy:  true,
-		s3.ObjectStorageClassGlacier:            true,
-		s3.ObjectStorageClassStandardIa:         true,
-		s3.ObjectStorageClassOnezoneIa:          true,
-		s3.ObjectStorageClassIntelligentTiering: true,
-		s3.ObjectStorageClassDeepArchive:        true,
+		"":                                       true,
+		string(types.ObjectStorageClassStandard): true,
+		string(types.ObjectStorageClassReducedRedundancy):  true,
+		string(types.ObjectStorageClassGlacier):            true,
+		string(types.ObjectStorageClassStandardIa):         true,
+		string(types.ObjectStorageClassOnezoneIa):          true,
+		string(types.ObjectStorageClassIntelligentTiering): true,
+		string(types.ObjectStorageClassDeepArchive):        true,
 	}
 )
 
 // Read the configuration file if found, otherwise return default configuration
-//  Precedence order (most important to least):
-//   - Command Line options
-//   - Environment Variables
-//   - Config File
-//   - Default Values
+//
+//	Precedence order (most important to least):
+//	 - Command Line options
+//	 - Environment Variables
+//	 - Config File
+//	 - Default Values
 func NewConfig(c *cli.Context) (*Config, error) {
 	var cfgPath string
 
