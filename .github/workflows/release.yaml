@@ -49,7 +49,7 @@ jobs:
         env:
           CGO_ENABLED: 0
         run: |
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -ldflags="-X main.Version=$GITHUB_REF_NAME" -o s3-cli_${{ matrix.goos }}_${{ matrix.goarch }}
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -ldflags="-s -X main.Version=$GITHUB_REF_NAME" -o s3-cli_${{ matrix.goos }}_${{ matrix.goarch }}
 
       - name: upload ${{ matrix.goos }} ${{ matrix.goarch }} artifact
         uses: actions/upload-release-asset@v1
