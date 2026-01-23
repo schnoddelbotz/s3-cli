@@ -35,7 +35,7 @@ func listBucket(config *Config, svc *s3.Client, args []string) error {
 			return fmt.Errorf("ls requires buckets to be prefixed with s3://")
 		}
 
-		_, err = SessionForBucket(config, u.Bucket)
+		rsvc, err := SessionForBucket(config, u.Bucket)
 		if err != nil {
 			return err
 		}
@@ -46,7 +46,7 @@ func listBucket(config *Config, svc *s3.Client, args []string) error {
 			var item string
 			item, todo = todo[0], todo[1:]
 
-			remotePager(config, svc, item, !config.Recursive, func(page *s3.ListObjectsV2Output) {
+			remotePager(config, rsvc, item, !config.Recursive, func(page *s3.ListObjectsV2Output) {
 				for _, item := range page.CommonPrefixes {
 					uri := fmt.Sprintf("s3://%s/%s", u.Bucket, *item.Prefix)
 

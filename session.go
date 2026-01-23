@@ -47,15 +47,21 @@ func SessionNew(config *Config) *s3.Client {
 		panic(err) // or handle error properly
 	}
 
-	if config.HostBase != "" && config.HostBase != "s3.amazon.com" {
-		fixedHost := config.HostBase
-		if !strings.HasPrefix(config.HostBase, "http") {
-			fixedHost = "https://" + config.HostBase
+	return s3.NewFromConfig(cfg, func(o *s3.Options) {
+		if config.Verbose {
+			o.ClientLogMode = aws.LogResponse | aws.LogRequest
 		}
-		cfg.EndpointResolverWithOptions = buildEndpointResolver(fixedHost)
-	}
-
-	return s3.NewFromConfig(cfg)
+		if config.HostBase != "" && config.HostBase != "s3.amazon.com" {
+			fixedHost := config.HostBase
+			if !strings.HasPrefix(config.HostBase, "http") {
+				fixedHost = "https://" + config.HostBase
+			}
+			o.BaseEndpoint = aws.String(fixedHost)
+		}
+		if config.UsePathStyle {
+			o.UsePathStyle = true
+		}
+	})
 }
 
 // SessionForBucket - For a given S3 bucket, create an appropriate session that references the region
@@ -69,6 +75,7 @@ func SessionForBucket(config *Config, bucket string) (*s3.Client, error) {
 	if config.HostBucket == "" || config.HostBucket == "%(bucket)s.s3.amazonaws.com" {
 		svc := SessionNew(config)
 
+		// TODO: Using the GetBucketLocation operation is no longer a best practice. ...
 		loc, err := svc.GetBucketLocation(context.TODO(), &s3.GetBucketLocationInput{Bucket: &bucket})
 		if err != nil {
 			return nil, err
@@ -80,6 +87,7 @@ func SessionForBucket(config *Config, bucket string) (*s3.Client, error) {
 			cfg.Region = string(loc.LocationConstraint)
 		}
 	} else {
+		// this is flawed ... https://github.com/koblas/s3-cli/issues/23 -- stay "compatible" for now.
 		host := strings.ReplaceAll(config.HostBucket, "%(bucket)s", bucket)
 		fixedHost := host
 		if !strings.HasPrefix(host, "http") {
@@ -88,5 +96,21 @@ func SessionForBucket(config *Config, bucket string) (*s3.Client, error) {
 		cfg.EndpointResolverWithOptions = buildEndpointResolver(fixedHost)
 	}
 
-	return s3.NewFromConfig(cfg), nil
+	return s3.NewFromConfig(cfg, func(o *s3.Options) {
+		// this duplicates SessionNew() ...
+		if config.Verbose {
+			o.ClientLogMode = aws.LogResponse | aws.LogRequest
+		}
+		if config.HostBase != "" && config.HostBase != "s3.amazon.com" {
+			fixedHost := config.HostBase
+			if !strings.HasPrefix(config.HostBase, "http") {
+				fixedHost = "https://" + config.HostBase
+			}
+			o.BaseEndpoint = aws.String(fixedHost)
+		}
+		if config.UsePathStyle {
+			o.UsePathStyle = true
+		}
+		o.Region = cfg.Region
+	}), nil
 }

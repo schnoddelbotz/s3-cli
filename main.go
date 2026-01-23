@@ -50,6 +50,11 @@ func main() {
 			Usage:   "Storage class (default: STANDARD)",
 			EnvVars: []string{"AWS_S3_STORAGE_CLASS"},
 		},
+		&cli.StringFlag{
+			Name:    "host-base",
+			Usage:   "HostBase / S3 Endpoint URL",
+			EnvVars: []string{"AWS_S3_ENDPOINT"},
+		},
 		&cli.IntFlag{
 			Name:    "concurrency",
 			Usage:   "Concurrency `NUM`",
@@ -65,6 +70,12 @@ func main() {
 		&cli.BoolFlag{
 			Name:  "recursive,r",
 			Usage: "Recursive upload, download or removal",
+		},
+		&cli.BoolFlag{
+			Name:    "use-path-style,p",
+			Usage:   "Use https://endpoint/bucket/ instead of https://bucket.endpoint/",
+			EnvVars: []string{"AWS_S3_USE_PATH_STYLE"},
+			// https://docs.aws.amazon.com/AmazonS3/latest/userguide/VirtualHosting.html
 		},
 		&cli.BoolFlag{
 			Name:  "force",

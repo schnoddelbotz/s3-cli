@@ -30,6 +30,7 @@ type Config struct {
 	Recursive    bool `ini:"recursive"`
 	Force        bool `ini:"force"`
 	SkipExisting bool `ini:"skip_existing"`
+	UsePathStyle bool `ini:"use_path_style"`
 
 	HostBase   string `ini:"host_base"`
 	HostBucket string `ini:"host_bucket"`
