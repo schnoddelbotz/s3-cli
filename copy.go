@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
@@ -97,6 +98,7 @@ func copyToS3(config *Config, src, dst *FileURI) error {
 	uploader := manager.NewUploader(svc, func(u *manager.Uploader) {
 		u.PartSize = int64(config.PartSize) * 1024 * 1024
 		u.Concurrency = config.Concurrency
+		u.RequestChecksumCalculation = aws.RequestChecksumCalculationWhenRequired
 	})
 
 	fd, err := os.Open(src.Path)

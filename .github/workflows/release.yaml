@@ -19,7 +19,6 @@ jobs:
       with:
         draft: false
         prerelease: false
-        name: Release ${{ github.ref }}
       env:
         GITHUB_TOKEN: ${{ github.token }}
 

@@ -111,6 +111,8 @@ func SessionForBucket(config *Config, bucket string) (*s3.Client, error) {
 		if config.UsePathStyle {
 			o.UsePathStyle = true
 		}
+		// specific to SessionForBucket:
+		o.RequestChecksumCalculation = aws.RequestChecksumCalculationWhenRequired
 		o.Region = cfg.Region
 	}), nil
 }
