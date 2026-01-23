@@ -28,7 +28,7 @@ func ListBucket(config *Config, c *cli.Context) error {
 	return listBucket(config, svc, args)
 }
 
-func listBucket(config *Config, svc *s3.Client, args []string) error {
+func listBucket(config *Config, _ *s3.Client, args []string) error {
 	for _, arg := range args {
 		u, err := FileURINew(arg)
 		if err != nil || u.Scheme != "s3" {

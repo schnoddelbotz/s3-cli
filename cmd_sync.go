@@ -288,13 +288,13 @@ func CmdSync(config *Config, c *cli.Context) error {
 		}
 
 		// This loop will add COPIES
-		for file, _ := range src_files {
+		for file := range src_files {
 			// fmt.Println(" FILE = ", file)
 			src_info := src_files[file]
 			addWork(srcs[0].SetPath(src_info.Name), src_info, dst_uri.SetPath(file), dst_files[file])
 		}
 		// This loop will add REMOVES from DST
-		for file, _ := range dst_files {
+		for file := range dst_files {
 			// fmt.Println("Remove Check", file)
 			if src_info := src_files[file]; src_info == nil {
 				addWork(nil, nil, dst_uri.Join(file), dst_files[file])
@@ -417,9 +417,7 @@ func amazonEtagHash(path string) (string, error) {
 	const BLOCK_SIZE = 1024 * 1024 * 5    // 5MB
 	const START_BLOCKS = 1024 * 1024 * 16 // 16MB
 
-	if strings.HasPrefix(path, "file://") {
-		path = path[7:]
-	}
+	path = strings.TrimPrefix(path, "file://")
 	fd, err := os.Open(path)
 	if err != nil {
 		return "", err
@@ -475,7 +473,7 @@ func workerCopy(config *Config, wg *sync.WaitGroup, jobs <-chan Action, progress
 }
 
 // GoRoutine workers -- remove file
-func workerRemove(config *Config, wg *sync.WaitGroup, jobs <-chan Action, progress chan int64) {
+func workerRemove(config *Config, wg *sync.WaitGroup, jobs <-chan Action, _ chan int64) {
 	objects := make([]types.ObjectIdentifier, 0)
 
 	// Helper to remove the actual objects

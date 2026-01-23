@@ -76,7 +76,7 @@ func copyCore(config *Config, src, dst *FileURI) error {
 
 			basePath := nsrc.Path
 
-			remotePager(config, svc, nsrc.String(), false, func(page *s3.ListObjectsV2Output) {
+			err = remotePager(config, svc, nsrc.String(), false, func(page *s3.ListObjectsV2Output) {
 				for _, obj := range page.Contents {
 					src_path := *obj.Key
 					fmt.Printf("src_path=%s  basePath=%s\n", src_path, basePath)
@@ -99,6 +99,9 @@ func copyCore(config *Config, src, dst *FileURI) error {
 					copyFile(config, src_uri, dst_uri, true)
 				}
 			})
+			if err != nil {
+				return err
+			}
 		} else {
 			// Get the local file list and start copying
 			err := filepath.Walk(src.Path, func(path string, info os.FileInfo, _ error) error {

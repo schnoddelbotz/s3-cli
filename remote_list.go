@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-func remotePager(config *Config, svc *s3.Client, uri string, delim bool, pager func(page *s3.ListObjectsV2Output)) error {
+func remotePager(_ *Config, svc *s3.Client, uri string, delim bool, pager func(page *s3.ListObjectsV2Output)) error {
 	u, err := FileURINew(uri)
 	if err != nil || u.Scheme != "s3" {
 		return fmt.Errorf("requires buckets to be prefixed with s3://")

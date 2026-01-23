@@ -128,7 +128,7 @@ func parseOptions(config *Config, c *cli.Context) {
 		if field.Tag.Get("cli") != "" {
 			name = field.Tag.Get("cli")
 		} else {
-			name = strings.Replace(CamelToSnake(field.Name), "_", "-", -1)
+			name = strings.ReplaceAll(CamelToSnake(field.Name), "_", "-")
 		}
 
 		// gset := c.GlobalIsSet(name)

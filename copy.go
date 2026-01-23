@@ -171,8 +171,6 @@ func cleanBucketDestPath(src, dst string) *string {
 	if strings.HasSuffix(dst, "/") {
 		dst += filepath.Base(src)
 	}
-	if strings.HasPrefix(dst, "/") {
-		dst = dst[1:]
-	}
+	dst = strings.TrimPrefix(dst, "/")
 	return &dst
 }
