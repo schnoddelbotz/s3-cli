@@ -58,7 +58,7 @@ func listBucket(config *Config, svc *s3.Client, args []string) error {
 				}
 				if page.Contents != nil {
 					for _, item := range page.Contents {
-						fmt.Printf("%16s %9d   s3://%s/%s\n", item.LastModified.Format(DATE_FMT), item.Size, u.Bucket, *item.Key)
+						fmt.Printf("%16s %9d   s3://%s/%s\n", item.LastModified.Format(DATE_FMT), *item.Size, u.Bucket, *item.Key)
 					}
 				}
 			})
