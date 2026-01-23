@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"runtime"
 
@@ -109,11 +110,9 @@ func main() {
 		return func(c *cli.Context) error {
 			config, err := NewConfig(c)
 			if err != nil {
-				fmt.Println(err)
 				return err
 			}
 			if err := handler(config, c); err != nil {
-				fmt.Println(err)
 				return err
 			}
 			return err
@@ -203,5 +202,7 @@ func main() {
 		// mv
 	}
 
-	cliapp.Run(os.Args)
+	if err := cliapp.Run(os.Args); err != nil {
+		log.Fatal(err)
+	}
 }
