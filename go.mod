@@ -1,6 +1,6 @@
 module github.com/koblas/s3-cli
 
-go 1.24
+go 1.25.0
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.42.0
@@ -9,6 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.22.28
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.104.0
 	github.com/urfave/cli/v2 v2.27.7
+	golang.org/x/crypto/x509roots/fallback v0.0.0-20260618162219-0b316e7ee409
 	gopkg.in/ini.v1 v1.67.3
 )
 

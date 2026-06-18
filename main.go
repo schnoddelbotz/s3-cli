@@ -6,6 +6,8 @@ import (
 	"os"
 	"runtime"
 
+	_ "golang.org/x/crypto/x509roots/fallback"
+
 	"github.com/urfave/cli/v2"
 )
 
