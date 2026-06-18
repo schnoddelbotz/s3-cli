@@ -17,14 +17,14 @@ func CmdCopy(config *Config, c *cli.Context) error {
 	args := c.Args().Slice()
 
 	if len(args) < 2 {
-		return fmt.Errorf("Not enought arguments to the copy command")
+		return fmt.Errorf("not enought arguments to the copy command")
 	}
 
 	dst, args := args[len(args)-1], args[:len(args)-1]
 
 	dst_u, err := FileURINew(dst)
 	if err != nil {
-		return fmt.Errorf("Invalid destination argument")
+		return fmt.Errorf("invalid destination argument")
 	}
 	if dst_u.Scheme == "" {
 		dst_u.Scheme = "file"
@@ -36,7 +36,7 @@ func CmdCopy(config *Config, c *cli.Context) error {
 	for _, path := range args {
 		u, err := FileURINew(path)
 		if err != nil {
-			return fmt.Errorf("Invalid destination argument")
+			return fmt.Errorf("invalid destination argument")
 		}
 		if u.Scheme == "" {
 			u.Scheme = "file"

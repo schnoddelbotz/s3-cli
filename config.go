@@ -83,7 +83,7 @@ func NewConfig(c *cli.Context) (*Config, error) {
 
 	// Some additional validation
 	if _, found := validStorageClasses[config.StorageClass]; !found {
-		return nil, fmt.Errorf("Invalid storage class provided: %s", config.StorageClass)
+		return nil, fmt.Errorf("invalid storage class provided: %s", config.StorageClass)
 	}
 
 	return config, nil
@@ -106,7 +106,7 @@ func loadConfigFile(path string) (*Config, error) {
 	// out but allows things to work.
 	if _, err := cfg.Section("").NewKey("bucket", "%(bucket)s"); err != nil {
 		// this shouldn't fail -- if it does the MapTo will fail
-		return nil, fmt.Errorf("Unable to create bucket key")
+		return nil, fmt.Errorf("unable to create bucket key")
 	}
 
 	if err := cfg.Section("default").MapTo(config); err != nil {

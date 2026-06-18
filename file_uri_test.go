@@ -16,7 +16,7 @@ func TestURI(t *testing.T) {
 	}
 
 	value = "xxx://bucket-name/a/b/c/file.txt"
-	uri, err = FileURINew("xxx://bucket-name/a/b/c/file.txt")
+	_, err = FileURINew("xxx://bucket-name/a/b/c/file.txt")
 	if err == nil {
 		t.Error("error parsing ", value)
 	}

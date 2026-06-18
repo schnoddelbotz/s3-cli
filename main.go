@@ -16,7 +16,7 @@ type CmdHandler func(*Config, *cli.Context) error
 var Version = "dev"
 
 func CmdNotImplemented(*Config, *cli.Context) error {
-	return fmt.Errorf("Command not implemented")
+	return fmt.Errorf("command not implemented")
 }
 
 func main() {
@@ -125,18 +125,6 @@ func main() {
 
 	cliapp.Commands = []*cli.Command{
 		{
-			Name:   "mb",
-			Usage:  "Make bucket -- s3-cli mb s3://BUCKET",
-			Action: launch(MakeBucket),
-			Flags:  cliapp.Flags,
-		},
-		{
-			Name:   "rb",
-			Usage:  "Remove bucket -- s3-cli mb s3://BUCKET",
-			Action: launch(RemoveBucket),
-			Flags:  cliapp.Flags,
-		},
-		{
 			Name:   "ls",
 			Usage:  "List objects or buckets -- s3-cli ls [s3://BUCKET[/PREFIX]]",
 			Action: launch(ListBucket),
@@ -173,29 +161,9 @@ func main() {
 			Flags:  cliapp.Flags,
 		},
 		{
-			Name:   "du",
-			Usage:  "Disk usage by buckets -- [s3://BUCKET[/PREFIX]]",
-			Action: launch(GetUsage),
-			Flags:  cliapp.Flags,
-		},
-		{
 			Name:   "cp",
 			Usage:  "copy files and directories -- SRC [SRC...] DST",
 			Action: launch(CmdCopy),
-			Flags:  cliapp.Flags,
-		},
-		/*
-			{
-				Name:   "sync",
-				Usage:  "Synchronize a directory tree to S3 -- LOCAL_DIR s3://BUCKET[/PREFIX] or s3://BUCKET[/PREFIX] LOCAL_DIR",
-				Action: launch(CmdSync),
-				Flags:  cliapp.Flags,
-			},
-		*/
-		{
-			Name:   "modify",
-			Usage:  "Modify object metadata -- s3://BUCKET1/OBJECT",
-			Action: launch(Modify),
 			Flags:  cliapp.Flags,
 		},
 		{

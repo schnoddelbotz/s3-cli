@@ -14,7 +14,7 @@ func GetInfo(config *Config, c *cli.Context) error {
 
 	// If we're not passed any args, we're going to do all S3 buckets
 	if len(args) == 0 {
-		return fmt.Errorf("Not enough parameters for command 'info'")
+		return fmt.Errorf("not enough parameters for command 'info'")
 	}
 
 	// Get the usage for the buckets

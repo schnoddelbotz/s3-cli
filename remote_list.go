@@ -38,23 +38,3 @@ func remotePager(_ *Config, svc *s3.Client, uri string, delim bool, pager func(p
 
 	return nil
 }
-
-func remoteList(config *Config, svc *s3.Client, args []string) ([]FileObject, error) {
-	result := make([]FileObject, 0)
-
-	for _, arg := range args {
-		pager := func(page *s3.ListObjectsV2Output) {
-			for _, obj := range page.Contents {
-				result = append(result, FileObject{
-					Name:     *obj.Key,
-					Size:     *obj.Size,
-					Checksum: *obj.ETag,
-				})
-			}
-		}
-
-		remotePager(config, svc, arg, false, pager)
-	}
-
-	return result, nil
-}

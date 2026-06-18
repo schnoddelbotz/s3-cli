@@ -112,14 +112,6 @@ Alias for `del`
 s3-cli rm [--recursive] s3://bucket/key/on/s3/
 ```
 
-### sync
-
-Sync a local directory to S3
-
-```
-s3-cli sync [--delete-removed] /path/to/folder/ s3://bucket/key/on/s3/
-```
-
 ### mv
 
 Move an object which is already on S3.
@@ -132,20 +124,22 @@ s3-cli mv s3://sourcebucket/source/key s3://destbucket/dest/key
 
 ### General Notes about s3cmd commpatability
 
+Items striked through have been dropped from the fork.
+
 DONE -
 
-* s3cmd mb s3://BUCKET
-* s3cmd rb s3://BUCKET
+* ~~s3cmd mb s3://BUCKET~~
+* ~~s3cmd rb s3://BUCKET~~
 * s3cmd ls [s3://BUCKET[/PREFIX]]
 * s3cmd la
 * s3cmd put FILE [FILE...] s3://BUCKET[/PREFIX]
 * s3cmd get s3://BUCKET/OBJECT LOCAL_FILE
 * s3cmd del s3://BUCKET/OBJECT
 * s3cmd rm s3://BUCKET/OBJECT
-* s3cmd du [s3://BUCKET[/PREFIX]]
+* ~~s3cmd du [s3://BUCKET[/PREFIX]]~~
 * s3cmd cp s3://BUCKET1/OBJECT1 s3://BUCKET2[/OBJECT2]
-* s3cmd modify s3://BUCKET1/OBJECT
-* s3cmd sync LOCAL_DIR s3://BUCKET[/PREFIX] or s3://BUCKET[/PREFIX] LOCAL_DIR
+* ~~s3cmd modify s3://BUCKET1/OBJECT~~
+* ~~s3cmd sync LOCAL_DIR s3://BUCKET[/PREFIX] or s3://BUCKET[/PREFIX] LOCAL_DIR~~
 * s3cmd info s3://BUCKET[/OBJECT]
 
 TODO - for full compatibility (with s3cmd)

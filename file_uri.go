@@ -19,7 +19,7 @@ func FileURINew(path string) (*FileURI, error) {
 		return nil, err
 	}
 	if u.Scheme != "" && u.Scheme != "s3" && u.Scheme != "file" {
-		return nil, fmt.Errorf("Invalid URI scheme must be one of file/s3/NONE")
+		return nil, fmt.Errorf("invalid URI scheme must be one of file/s3/NONE")
 	}
 
 	uri := FileURI{

@@ -25,7 +25,7 @@ func DeleteObjects(config *Config, c *cli.Context) error {
 		}
 
 		if (u.Path == "" || strings.HasSuffix(u.Path, "/")) && !config.Recursive {
-			return fmt.Errorf("Parameter problem: Expecting S3 URI with a filename or --recursive: %s", path)
+			return fmt.Errorf("parameter problem: Expecting S3 URI with a filename or --recursive: %s", path)
 		}
 
 		objects := buckets[u.Bucket]
