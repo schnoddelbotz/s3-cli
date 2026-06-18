@@ -1,8 +1,44 @@
 # s3-cli -- Go version of s3cmd
 
+This is a fork of below mentioned [s3-cli](https://github.com/koblas/s3-cli).
+The fork was created to
+
+- apply maintenance/security updates (Go and dependencies)
+- automate releases and enable dependabot
+- improve s3-cli support for usage in CI pipelines
+- improve s3-cli support for non-AWS endpoints
+- fix issues, focus on `cp` usage for simple CI purposes
+
+Example usage using a custom S3 endpoint, without any config files:
+
+```bash
+# Endpoint will be prefixed with https:// by default
+export AWS_S3_ENDPOINT=privates3.example.com
+# https://docs.aws.amazon.com/AmazonS3/latest/userguide/VirtualHosting.html#path-style-access
+export AWS_S3_USE_PATH_STYLE=true
+# Access key and secret like before / with aws cli
+export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+
+# List buckets
+s3-cli ls
+# List bucket contents
+s3-cli ls s3://mybucket
+# List bucket contents with given prefix
+s3-cli ls s3://mybucket/prefix123
+# Upload file.txt
+s3-cli cp file.txt s3://mybucket
+# Upload file1.txt and file2.txt, using given prefix
+s3-cli cp file1.txt file2.txt s3://mybucket/prefix123
+# Download file1.txt to /tmp
+s3-cli cp s3://mybucket/file1.txt /tmp
+```
+
+##
+
 Command line utility frontend to the [AWS Go SDK](http://docs.aws.amazon.com/sdk-for-go/api/)
 for S3.  Inspired by [s3cmd](https://github.com/s3tools/s3cmd) and attempts to be a
-drop-in replacement. 
+drop-in replacement.
 
 ## Features
 
@@ -10,7 +46,7 @@ drop-in replacement.
 * Supports a subset of s3cmd's commands and parameters
   - including `put`, `get`, `del`, `ls`, `sync`, `cp`
   - commands are much smarter (get, put, cp - can move to and from S3)
-* When syncing directories, instead of uploading one file at a time, it 
+* When syncing directories, instead of uploading one file at a time, it
   uploads many files in parallel resulting in more bandwidth.
 * Uses multipart uploads for large files and uploads each part in parallel. This is
   accomplished using the s3manager that comes with the SDK
@@ -35,7 +71,7 @@ You can also point it to another config file with e.g. `$ s3-cli --config /path/
 
 ## Documentation
 
-In general the commands follow `rsync` as a guide for command options or the unix command line 
+In general the commands follow `rsync` as a guide for command options or the unix command line
 commands.
 
 ### cp
@@ -96,7 +132,7 @@ s3-cli mv s3://sourcebucket/source/key s3://destbucket/dest/key
 
 ### General Notes about s3cmd commpatability
 
-DONE - 
+DONE -
 
 * s3cmd mb s3://BUCKET
 * s3cmd rb s3://BUCKET

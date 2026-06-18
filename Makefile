@@ -1,10 +1,11 @@
 SRC=*.go
+BIN=s3-cli
 
-s3-cli: $(SRC)
-	go build -o $@ $(SRC)
+$(BIN): $(SRC)
+	CGO_ENABLED=0 go build -ldflags '-w -s' -o $@ .
 
-clean: $(SRC)
-	rm -f s3-cli
+clean:
+	rm -f $(BIN)
 
 test:
 	go test
